@@ -13,8 +13,8 @@ def sh_input():
     print('|_______________________|')
     
     # initial inputs
-    os_username = input('server username: ')
-    os_password = input('server password: ')
+    username = input('server username: ')
+    password = input('server password: ')
     git_repo_url = input('git repo url: ')
     email = input('Email Addrss: ')
     vps_ip = input('Server IP: ')
@@ -25,7 +25,7 @@ def sh_input():
         print('please reneter a valid port number')
         ssh_port = input('SSH Port (number btwn 1024 and 65535): ')
     
-    sh_controller(os_username,os_password,git_repo_url,email,vps_ip,server_name,ssh_port)
+    sh_controller(username, password, git_repo_url, email, vps_ip, server_name, ssh_port)
 
         # sh - c 'echo "<os_username>:<os_password>" >> .credentials'            
 
@@ -37,31 +37,28 @@ def welcome_msg():
     os.system('clear')
     print('Welcome')
     print('What would you like to do?')
-    user_input = input('''[1]Nano setup\n\
-[2]Permissions\n\
-[3]fireWalld\n\
-[4]Ntp\n\
-[5]nGinx\n\
-[6]Fail2ban\n\
-[7]Update from Github\n
+    user_input = input('''[1]Permissions\n\
+[2]fireWalld\n\
+[3]Ntp\n\
+[4]nGinx\n\
+[5]Fail2ban\n\
+[6]Update from Github\n
 [A]All\n\
 [[X]eXit\n:>''')
     return user_input
 
-def sh_controller(os_username,os_password,git_repo_url,email,vps_ip,server_name,ssh_port):
+def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_port):
     user_choice = welcome_msg()
     user_choice = user_choice.lower()
-    _nano = ['1', 'nano']
-    _permissions = ['2', 'permissions']
-    _firewall = ['3', 'firewalld', 'firewall']
-    _ntp = ['4', 'ntp']
-    _nginx = ['5', 'nginx']
-    _fail2ban = ['6', 'fail2ban']
-    _git_hub = ['7', 'github']
+    _permissions = ['1', 'permissions']
+    _firewall = ['2', 'firewalld', 'firewall']
+    _ntp = ['3', 'ntp']
+    _nginx = ['4', 'nginx']
+    _fail2ban = ['5', 'fail2ban']
+    _git_hub = ['6', 'github']
     _all = ['a', 'all']
     _exit = ['x', 'exit']
-    accept_input = _nano     \
-                + _permissions  \
+    accept_input = _permissions  \
                 + _firewall     \
                 + _ntp  \
                 + _nginx    \
@@ -72,28 +69,26 @@ def sh_controller(os_username,os_password,git_repo_url,email,vps_ip,server_name,
     if user_choice in accept_input:
         os.system(f"ssh root@{vps_ip} 'apt-get update'")
         os.system(f"ssh root@{vps_ip} 'apt-get upgrade'")
-        os.system(f"ssh root@{vps_ip} 'apt-get install python3-pip'")
-        print('updating/upgrading virtual server')
-
-        # generat credentials
-        print('generating credentials')
+        os.system(f"ssh root@{vps_ip} 'apt-get install python3-pip tree'")
         os.system(f'mkdir {server_name}')
-        os.system(f'touch {server_name}/{server_name}_config.sh')
-        os.system(f'echo "{os_username}:{os_password}" >> {server_name}/.credentials')
+        cred_gen(username, password, server_name, vps_ip)
+        # nano config settings 
+        nano_config(vps_ip, server_name)
+        print('updating/upgrading virtual server')
+        # generate username/password to .credentials
+        create_user(username, password, vps_ip, server_name)
+        print('generating credentials')
+        # setting ssh key
+        set_ssh_key(username, server_name, vps_ip)
 
 
-        if user_choice in _nano:
-            nano_config(vps_ip, server_name)
-            os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
-            exit_ssh(server_name)
-
-        elif user_choice in _permissions:
-            permissions_config(os_username, server_name)
+        if user_choice in _permissions:
+            permissions_config(vps_ip, username, server_name)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
             exit_ssh(server_name)
 
         elif user_choice in _firewall:
-            firewall_config(vps_ip, ssh_port, server_name)
+            firewall_config(vps_ip, ssh_port, server_name, username)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
             exit_ssh(server_name)
 
@@ -118,14 +113,14 @@ def sh_controller(os_username,os_password,git_repo_url,email,vps_ip,server_name,
         elif user_choice in _all:
             print('UPDATING ALL')
             nano_config(vps_ip, server_name)
-            permissions_config(os_username, server_name)
-            firewall_config(vps_ip, ssh_port, server_name)
+            firewall_config(vps_ip, ssh_port, server_name, username)
             ntp_config(vps_ip, server_name)
             nginx_config(vps_ip, server_name)
             fail2ban_config(vps_ip, server_name)
             git_clone(vps_ip, git_repo_url)
+            permissions_config(vps_ip, username, server_name)
             print('UPDATED ALL OPTIONS') 
-            os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
+
             exit_ssh(server_name)
 
         elif user_choice in _exit:
@@ -137,38 +132,59 @@ def sh_controller(os_username,os_password,git_repo_url,email,vps_ip,server_name,
     else:
         print('try again')
 
+def cred_gen(username, password, server_name,vps_ip):
+    os.system(f"sed 's/<os_username>/{username}/g; s/<os_password./{password}/g' cred_gen.sh > {server_name}/cred_config.sh")
+    os.system(f"./{server_name}/cred_config.sh")
+
+def create_user(username, password, vps_ip, server_name):
+    os.system(f"sed 's/<os_username>/{username}/g' user_setup.sh > {server_name}/user_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/user_config.sh')
+
+def set_ssh_key(username, server_name, vps_ip):
+    os.system(f"sed 's/<vps_ip_addr>/{vps_ip}/g;s/<os_username>/{username}/g' ssh_copier.sh > {server_name}/ssh_config.sh")
+    os.system(f'./{server_name}/ssh_config.sh')
+    
 def nano_config(vps_ip, server_name):
     print('UPDATING NANORC')
     os.system(f"ssh root@{vps_ip} 'apt-get install nano'")
-    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' nano_config.sh > {server_name}/{server_name}_config.sh:")
+    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' nano_config.sh > {server_name}/nano_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/nano_config.sh')
 
-def permissions_config(os_username, server_name):
+def permissions_config(vps_ip, username, server_name):
     print('UPDATING PERMISSIONS')
-    os.system(f"sed 's/<os_username>/{os_username}/g' permissions_config.sh > {server_name}/{server_name}_config.sh:")
+    os.system(f"sed 's/<os_username>/{username}/g' password.sh > {server_name}/password_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/password_config.sh')
+    # os.system(f'ssh root@{vps_ip} "touch ../etc/ssh/{server_name}/authorized_keys"')
+    os.system(f"sed 's/<os_username>/{username}/g' permissions_config.sh > {server_name}/permissions_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/permissions_config.sh')
     # run permission setup 
 
-def firewall_config(vps_ip, ssh_port, server_name):
+def firewall_config(vps_ip, ssh_port, server_name, username):
     print('UPDATING FIREWALLd')
     os.system(f"ssh root@{vps_ip} 'apt-get install firewalld'")
-    os.system(f"sed 's/<defined_ssh_port>/{ssh_port}/g' firewalld_config.sh > {server_name}/{server_name}_config.sh:")
+    os.system(f"sed 's/<defined_ssh_port>/{ssh_port}/g;s/<os_username>/{username}/g' firewalld_config.sh > {server_name}/firewall_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/firewall_config.sh')
     # run firewallb setup
 
 def ntp_config(vps_ip, server_name):
     print('UPDATING NTP')
     os.system(f"ssh root@{vps_ip} 'apt-get install ntp'")
-    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' ntp_config.sh > {server_name}/{server_name}_config.sh:")
+    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' ntp_config.sh > {server_name}/ntp_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/ntp_config.sh')
     # run ntp setup
 
 def nginx_config(vps_ip, server_name):
     print('UPDATING NGINX')
     os.system(f"ssh root@{vps_ip} 'apt-get install nginx'")
-    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' nginx_config.sh > {server_name}/{server_name}_config.sh:")
+    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' nginx_config.sh > {server_name}/nginx_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/nginx_config.sh')
     # run nginx setup 
 
 def fail2ban_config(vps_ip, server_name):
     print('UPDATING FAIL2BAN')
     os.system(f"ssh root@{vps_ip} 'apt-get install fail2ban'")
-    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' fail2ban_config.sh > {server_name}/{server_name}_config.sh:")
+    os.system(f"sed 's/<vps_ip>/{vps_ip}/g' fail2ban_config.sh > {server_name}/fail2ban_config.sh")
+    os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/fail2ban_config.sh')
     # run fail2ban setup 
 
 def git_clone(vps_ip, git_repo_url):
@@ -176,7 +192,8 @@ def git_clone(vps_ip, git_repo_url):
     os.system(f"ssh root@{vps_ip} 'git clone {git_repo_url}'")
 
 def exit_ssh(server_name):
-    os.system(f'rm {server_name}/.credentials')
+    # os.system(f'rm {server_name}/.credentials')
+    # os.system(f'ssh root@{vps_ip} "bash -s" < ./remove_cred.sh')
     print('.credentials removed') 
 
 

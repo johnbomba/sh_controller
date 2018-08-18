@@ -16,6 +16,6 @@ sh -c "echo 'vm.swappiness=10' >> /etc/sysctl.conf"
 
 sysctl vm.vfs_cache_pressure=30
 
-sh -c 'echo "vm.vfs_cache_pressure=30" >> /etc/sysctl.conf'
+sh -c 'echo "vm.vfs_cache   _pressure=30" >> /etc/sysctl.conf'
 
 

@@ -1,5 +1,7 @@
 #! usr/bin bash
 
+# permissions config
+
 chown -R <os_username>:<os_username> /etc/ssh/<os_username>
 
 chmod 755 /etc/ssh/<os_username>

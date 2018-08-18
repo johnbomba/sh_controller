@@ -51,7 +51,7 @@
     sh -c 'echo "set tabsize 8" >> .nanorc'
 
     sh -c 'echo "set tabstospaces" >> .nanorc'
-
+# ? What does this block do
 adduser --disabled-password --gecos "" <os_username>
 
 usermod -aG sudo <os_username>
@@ -61,18 +61,18 @@ cp .nanorc /home/<os_username>/
 mkdir /etc/ssh/<os_username>
 
 exit
-
+# ? end my questions block 
 # ::|\ _______ /|::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 # ::| |       | |::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 # ::| | local | |::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 # ::| !_______! |::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 # ::!/         \!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 
-scp .ssh/id_rsa.pub root@<vps_ip_addr>:/etc/ssh/<os_username>/authorized_keys
+            scp .ssh/id_rsa.pub root@<vps_ip_addr>:/etc/ssh/<os_username>/authorized_keys
 
-scp .credentials root@<vps_ip_addr>:/home/<os_username>/
+            scp .credentials root@<vps_ip_addr>:/home/<os_username>/
 
-ssh root@<vps_ip_addr>
+            ssh root@<vps_ip_addr>
 
 # ::|\ ________ /|:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
 # ::| |        | |:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: #
@@ -384,7 +384,13 @@ ssh root@<vps_ip_addr>
 
 cat /home/<os_username>/.credentials | chpasswd
 
-rm /home/<os_username>/.credentials
+        rm /home/<os_username>/.credentials
+
+
+
+
+## dont nee
+
 
 sudo apt-get -y install postgresql postgresql-contrib
 
