@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! usr/bin bash
 
 sh -c 'echo "log_format timekeeper \$remote_addr - \$remote_user [\$time_local] " >> /etc/nginx/conf.d/timekeeper-log-format.conf'
 

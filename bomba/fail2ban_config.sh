@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! env/bin bash
 
 systemctl enable fail2ban   
 

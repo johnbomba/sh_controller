@@ -15,23 +15,17 @@ def sh_input():
     # initial inputs
     username = input('server username: ')
     password = input('server password: ')
-    git_repo_url = input('git repo url: ')
     email = input('Email Addrss: ')
-    vps_ip = input('Server IP: ')
     server_name = input('Server Name: ')
+    vps_ip = input('Server IP: ')
     ssh_port = int(input('SSH Port (number btwn 1024 and 65535): '))
+    git_repo_url = input('git repo url: ')
 
     while ssh_port < 1024 or ssh_port > 65535:
         print('please reneter a valid port number')
         ssh_port = input('SSH Port (number btwn 1024 and 65535): ')
     
     sh_controller(username, password, git_repo_url, email, vps_ip, server_name, ssh_port)
-
-        # sh - c 'echo "<os_username>:<os_password>" >> .credentials'            
-
-        # ssh root@<vps_ip>
-
-        # user decides what they want to do
 
 def welcome_msg():
     os.system('clear')
@@ -67,18 +61,21 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
                 + _exit
 
     if user_choice in accept_input:
+        # TODO replace the next 3 lines with initial server setup
         os.system(f"ssh root@{vps_ip} 'apt-get update'")
         os.system(f"ssh root@{vps_ip} 'apt-get upgrade'")
         os.system(f"ssh root@{vps_ip} 'apt-get install python3-pip tree'")
+
         os.system(f'mkdir {server_name}')
+# genertate Credentials
         cred_gen(username, password, server_name, vps_ip)
-        # nano config settings 
+# nano config settings 
         nano_config(vps_ip, server_name)
         print('updating/upgrading virtual server')
-        # generate username/password to .credentials
+# generate username/password to .credentials
         create_user(username, password, vps_ip, server_name)
         print('generating credentials')
-        # setting ssh key
+# setting ssh key
         set_ssh_key(username, server_name, vps_ip)
 
 
@@ -112,7 +109,6 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
 
         elif user_choice in _all:
             print('UPDATING ALL')
-            nano_config(vps_ip, server_name)
             firewall_config(vps_ip, ssh_port, server_name, username)
             ntp_config(vps_ip, server_name)
             nginx_config(vps_ip, server_name)
@@ -133,15 +129,15 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
         print('try again')
 
 def cred_gen(username, password, server_name,vps_ip):
-    os.system(f"sed 's/<os_username>/{username}/g; s/<os_password./{password}/g' cred_gen.sh > {server_name}/cred_config.sh")
+    os.system(f"sed 's/<os_username>/{username}/g; s/<os_password>/{password}/g' cred_gen.sh > {server_name}/cred_config.sh")
     os.system(f"./{server_name}/cred_config.sh")
 
 def create_user(username, password, vps_ip, server_name):
-    os.system(f"sed 's/<os_username>/{username}/g' user_setup.sh > {server_name}/user_config.sh")
+    os.system(f"sed 's/<os_username>/{username}/g; s/<server_name>/{server_name}/g' user_setup.sh > {server_name}/user_config.sh")
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/user_config.sh')
 
 def set_ssh_key(username, server_name, vps_ip):
-    os.system(f"sed 's/<vps_ip_addr>/{vps_ip}/g;s/<os_username>/{username}/g' ssh_copier.sh > {server_name}/ssh_config.sh")
+    os.system(f"sed 's/<vps_ip_addr>/{vps_ip}/g; s/<os_username>/{username}/g' ssh_copier.sh > {server_name}/ssh_config.sh")
     os.system(f'./{server_name}/ssh_config.sh')
     
 def nano_config(vps_ip, server_name):

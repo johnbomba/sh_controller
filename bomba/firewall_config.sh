@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin bash
 
 #firewalld configs
 
@@ -8,9 +8,9 @@ firewall-cmd --reload
 
 systemctl enable firewalld
 
-sed -i -e '/^Port/s/^.*$/Port <defined_ssh_port>/' /etc/ssh/sshd_config
+sed -i -e '/^Port/s/^.*$/Port 9876/' /etc/ssh/sshd_config
 
-firewall-cmd --add-port <defined_ssh_port>/tcp --permanent
+firewall-cmd --add-port 9876/tcp --permanent
 
 firewall-cmd --reload
 

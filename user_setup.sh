@@ -1,4 +1,4 @@
-#! usr/bin bash
+#!/usr/bin/env bash
 
 adduser --disabled-password --gecos "" <os_username>
 
