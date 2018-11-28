@@ -21,5 +21,5 @@ sh -c 'echo "" >> /etc/ssh/sshd_config'
 sh -c 'echo "# Added by Katabasis build process" >> /etc/ssh/sshd_config'
 
 sh -c 'echo "AllowUsers <os_username>" >> /etc/ssh/sshd_config'
-
+  
 systemctl reload sshd

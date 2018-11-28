@@ -5,12 +5,12 @@ import os
 
 def sh_input():
 
-    print('________________________')
-    print('|                       |')
-    print('|                       |')
-    print('|     sh controller     |')
-    print('|                       |')
-    print('|_______________________|')
+    print('_________________________')
+    print('|                        |')
+    print('|       DEPLOYMENT       |')
+    print('|                        |')
+    print('|         SCRIPT         |')
+    print('|________________________|')
     
     # initial inputs
     username = input('server username: ')
@@ -128,16 +128,24 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
     else:
         print('try again')
 
+def local(server_name):
+    os.system(f'chmod +x /{server_name}/*.sh' )
+
+
 def cred_gen(username, password, server_name,vps_ip):
-    os.system(f"sed 's/<os_username>/{username}/g; s/<os_password>/{password}/g' cred_gen.sh > {server_name}/cred_config.sh")
+    os.system(f"sed 's/<os_username>/{username}/g; s/<os_password>/{password}/g; s/<server_name>/{server_name}/g' cred_gen.sh > {server_name}/cred_config.sh")
+    #local(server_name)
+    os.system(f'chmod +x {server_name}/cred_config.sh')
     os.system(f"./{server_name}/cred_config.sh")
 
 def create_user(username, password, vps_ip, server_name):
     os.system(f"sed 's/<os_username>/{username}/g; s/<server_name>/{server_name}/g' user_setup.sh > {server_name}/user_config.sh")
+    local(server_name)
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/user_config.sh')
 
 def set_ssh_key(username, server_name, vps_ip):
     os.system(f"sed 's/<vps_ip_addr>/{vps_ip}/g; s/<os_username>/{username}/g' ssh_copier.sh > {server_name}/ssh_config.sh")
+    local(server_name)
     os.system(f'./{server_name}/ssh_config.sh')
     
 def nano_config(vps_ip, server_name):
@@ -149,9 +157,10 @@ def nano_config(vps_ip, server_name):
 def permissions_config(vps_ip, username, server_name):
     print('UPDATING PERMISSIONS')
     os.system(f"sed 's/<os_username>/{username}/g' password.sh > {server_name}/password_config.sh")
+    local(server_name)
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/password_config.sh')
-    # os.system(f'ssh root@{vps_ip} "touch ../etc/ssh/{server_name}/authorized_keys"')
     os.system(f"sed 's/<os_username>/{username}/g' permissions_config.sh > {server_name}/permissions_config.sh")
+    local(server_name)
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/permissions_config.sh')
     # run permission setup 
 
@@ -199,3 +208,4 @@ def exit_ssh(server_name):
 if __name__ == '__main__':
     # sh_controller()
     sh_input()
+    # cred_gen('greg6', 'greg6', 'greg6', '127.0.0.1',)
