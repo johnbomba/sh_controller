@@ -4,11 +4,11 @@
 
 chown -R <os_username>:<os_username> /etc/ssh/<os_username>
 
-chmod 755 /etc/ssh/<os_username>
+chmod 755 /home/<os_username>/.ssh/
 
-chmod 644 /etc/ssh/<os_username>/authorized_keys
+chmod 644 /home/<os_username>/.ssh/authorized_keys
 
-sed -i -e '/^#AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile \/etc\/ssh\/<os_username>\/authorized_keys/' /etc/ssh/sshd_config
+# sed -i -e '/^#AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile \/etc\/ssh\/<os_username>\/authorized_keys/' /etc/ssh/sshd_config
 
 sed -i -e '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
 

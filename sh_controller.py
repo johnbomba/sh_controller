@@ -67,15 +67,15 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
         os.system(f"ssh root@{vps_ip} 'apt-get install python3-pip tree'")
 
         os.system(f'mkdir {server_name}')
-# genertate Credentials
+    # genertate Credentials
         cred_gen(username, password, server_name, vps_ip)
-# nano config settings 
+    # nano config settings 
         nano_config(vps_ip, server_name)
         print('updating/upgrading virtual server')
-# generate username/password to .credentials
+    # generate username/password to .credentials
         create_user(username, password, vps_ip, server_name)
         print('generating credentials')
-# setting ssh key
+    # setting ssh key
         set_ssh_key(username, server_name, vps_ip)
 
 
