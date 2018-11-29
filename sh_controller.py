@@ -199,8 +199,8 @@ def git_clone(vps_ip, git_repo_url):
 def exit_ssh(server_name):
     # os.system(f'rm {server_name}/.credentials')
     # os.system(f'ssh root@{vps_ip} "bash -s" < ./remove_cred.sh')
-    print('.credentials removed') 
-
+    # print('.credentials removed') 
+    print('where is the .credentials file?')
 
 
 
