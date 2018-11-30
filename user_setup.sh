@@ -8,4 +8,4 @@ cp .nanorc /home/<os_username>/
 
 mkdir /home/<os_username>/.ssh
 
-mkdir /etc/ssh/<server_name>
+# mkdir /etc/ssh/<server_name>

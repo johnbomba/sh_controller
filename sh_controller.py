@@ -62,9 +62,9 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
 
     if user_choice in accept_input:
         # TODO replace the next 3 lines with initial server setup
-        os.system(f"ssh root@{vps_ip} 'apt-get update'")
-        os.system(f"ssh root@{vps_ip} 'apt-get upgrade'")
-        os.system(f"ssh root@{vps_ip} 'apt-get install python3-pip tree'")
+        os.system(f"ssh root@{vps_ip} 'apt-get -y update'")
+        os.system(f"ssh root@{vps_ip} 'apt-get -y upgrade'")
+        os.system(f"ssh root@{vps_ip} 'apt-get -y install python3-pip tree'")
 
         os.system(f'mkdir {server_name}')
     # genertate Credentials
@@ -82,26 +82,31 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
         if user_choice in _permissions:
             permissions_config(vps_ip, username, server_name)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
+            local(server_name)
             exit_ssh(server_name)
 
         elif user_choice in _firewall:
             firewall_config(vps_ip, ssh_port, server_name, username)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
+            local(server_name)
             exit_ssh(server_name)
 
         elif user_choice in _ntp:
             ntp_config(vps_ip, server_name)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
+            local(server_name)
             exit_ssh(server_name)
 
         elif user_choice in _nginx:
             nginx_config(vps_ip, server_name)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
+            local(server_name)
             exit_ssh(server_name)
 
         elif user_choice in _fail2ban:
             fail2ban_config(vps_ip, server_name)
             os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/{server_name}_config.sh')
+            local(server_name)
             exit_ssh(server_name)
 
         elif user_choice in _git_hub:
@@ -109,12 +114,13 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
 
         elif user_choice in _all:
             print('UPDATING ALL')
-            firewall_config(vps_ip, ssh_port, server_name, username)
             ntp_config(vps_ip, server_name)
             nginx_config(vps_ip, server_name)
             fail2ban_config(vps_ip, server_name)
             git_clone(vps_ip, git_repo_url)
             permissions_config(vps_ip, username, server_name)
+            firewall_config(vps_ip, ssh_port, server_name, username)
+            local(server_name)
             print('UPDATED ALL OPTIONS') 
 
             exit_ssh(server_name)
@@ -129,65 +135,59 @@ def sh_controller(username,password,git_repo_url,email,vps_ip,server_name,ssh_po
         print('try again')
 
 def local(server_name):
-    os.system(f'chmod +x /{server_name}/*.sh' )
+    os.system(f'chmod +x {server_name}/*.sh' )
 
 
 def cred_gen(username, password, server_name,vps_ip):
     os.system(f"sed 's/<os_username>/{username}/g; s/<os_password>/{password}/g; s/<server_name>/{server_name}/g' cred_gen.sh > {server_name}/cred_config.sh")
-    #local(server_name)
-    os.system(f'chmod +x {server_name}/cred_config.sh')
     os.system(f"./{server_name}/cred_config.sh")
 
 def create_user(username, password, vps_ip, server_name):
     os.system(f"sed 's/<os_username>/{username}/g; s/<server_name>/{server_name}/g' user_setup.sh > {server_name}/user_config.sh")
-    local(server_name)
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/user_config.sh')
 
 def set_ssh_key(username, server_name, vps_ip):
     os.system(f"sed 's/<vps_ip_addr>/{vps_ip}/g; s/<os_username>/{username}/g' ssh_copier.sh > {server_name}/ssh_config.sh")
-    local(server_name)
     os.system(f'./{server_name}/ssh_config.sh')
     
 def nano_config(vps_ip, server_name):
     print('UPDATING NANORC')
-    os.system(f"ssh root@{vps_ip} 'apt-get install nano'")
+    os.system(f"ssh root@{vps_ip} 'apt-get -y install nano'")
     os.system(f"sed 's/<vps_ip>/{vps_ip}/g' nano_config.sh > {server_name}/nano_config.sh")
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/nano_config.sh')
 
 def permissions_config(vps_ip, username, server_name):
     print('UPDATING PERMISSIONS')
     os.system(f"sed 's/<os_username>/{username}/g' password.sh > {server_name}/password_config.sh")
-    local(server_name)
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/password_config.sh')
     os.system(f"sed 's/<os_username>/{username}/g' permissions_config.sh > {server_name}/permissions_config.sh")
-    local(server_name)
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/permissions_config.sh')
     # run permission setup 
 
 def firewall_config(vps_ip, ssh_port, server_name, username):
     print('UPDATING FIREWALLd')
-    os.system(f"ssh root@{vps_ip} 'apt-get install firewalld'")
+    os.system(f"ssh root@{vps_ip} 'apt-get -y install firewalld'")
     os.system(f"sed 's/<defined_ssh_port>/{ssh_port}/g;s/<os_username>/{username}/g' firewalld_config.sh > {server_name}/firewall_config.sh")
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/firewall_config.sh')
     # run firewallb setup
 
 def ntp_config(vps_ip, server_name):
     print('UPDATING NTP')
-    os.system(f"ssh root@{vps_ip} 'apt-get install ntp'")
+    os.system(f"ssh root@{vps_ip} 'apt-get -y install ntp'")
     os.system(f"sed 's/<vps_ip>/{vps_ip}/g' ntp_config.sh > {server_name}/ntp_config.sh")
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/ntp_config.sh')
     # run ntp setup
 
 def nginx_config(vps_ip, server_name):
     print('UPDATING NGINX')
-    os.system(f"ssh root@{vps_ip} 'apt-get install nginx'")
+    os.system(f"ssh root@{vps_ip} 'apt-get -y install nginx'")
     os.system(f"sed 's/<vps_ip>/{vps_ip}/g' nginx_config.sh > {server_name}/nginx_config.sh")
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/nginx_config.sh')
     # run nginx setup 
 
 def fail2ban_config(vps_ip, server_name):
     print('UPDATING FAIL2BAN')
-    os.system(f"ssh root@{vps_ip} 'apt-get install fail2ban'")
+    os.system(f"ssh root@{vps_ip} 'apt-get -y install fail2ban'")
     os.system(f"sed 's/<vps_ip>/{vps_ip}/g' fail2ban_config.sh > {server_name}/fail2ban_config.sh")
     os.system(f'ssh root@{vps_ip} "bash -s" < ./{server_name}/fail2ban_config.sh')
     # run fail2ban setup 
